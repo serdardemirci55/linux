@@ -14,6 +14,8 @@
 #define IA32_VMX_PINBASED_CTLS	0x481
 #define IA32_VMX_PROCBASED_CTLS 0x482
 #define IA32_VMX_PROCBASED_CTLS2 0x48B
+#define IA32_VMX_EXIT_CTLS 0x483
+#define IA32_VMX_ENTRY_CTLS 0x484
 
 /*
  * struct capability_info
@@ -71,7 +73,7 @@ struct capability_info procbased[22] =
 };
 
 /*
- * Procbased capabilities
+ * Secondary Procbased capabilities
  * See SDM volume 3, section 23.6.2
  */
 struct capability_info procbased_secondary[27] =
@@ -102,7 +104,49 @@ struct capability_info procbased_secondary[27] =
     { 24, "Intel PT Uses Guest Physical Addresses" },
     { 25, "Use TSC Scaling" },
     { 26, "Enable User Wait And Pause" },
-    { 28, " Enable ENCLV exiting" }
+    { 28, "Enable ENCLV exiting" }
+};
+
+/*
+ * Exit capabilities
+ * See SDM volume 3, section 23.7.1
+ */
+struct capability_info vmexit[14] =
+{
+    { 2, "Save Debug Controls" },
+    { 9, "Host Address Space Size" },
+    { 12, "Load IA32_PERF_GLOBAL_CTRL" },
+    { 15, "Acknowledge Interrupt On Exit" },
+    { 18, "Save IA32_PAT" },
+    { 19, "Load IA32_PAT" },
+    { 20, "Save IA32_EFER" },
+    { 21, "Load IA32_EFER" },
+    { 22, "Save VMX Preemption Timer Value" },
+    { 23, "Clear IA32_BNDCFGS" },
+    { 24, "Conceal VMX from PT" },
+    { 25, "Clear IA32_RTIT_CTL" },
+    { 28, "Load CET State" },
+    { 29, "Load PKRS" }
+};
+
+/*
+ * Entry capabilities
+ * See SDM volume 3, section 23.8.1
+ */
+struct capability_info entry[12] =
+{
+    { 2, "Load Debug Controls" },
+    { 9, "IA-32e Mode Guest" },
+    { 10, "Entry To SMM" },
+    { 11, "Deactivate Dual Monitor Treatment" },
+    { 13, "Load IA32_PERF_GLOBAL_CTRL" },
+    { 14, "Load IA32_PAT" },
+    { 15, "Load IA32_EFER" },
+    { 16, "Clear IA32_BNDCFGS" },
+    { 17, "Conceal VMX From PT" },
+    { 18, "Load IA32_RTIT_CTL" },
+    { 20, "Load CET State" },
+    { 22, "Load PKRS" }
 };
 
 /*
@@ -173,6 +217,18 @@ detect_vmx_features(void)
 	{
 		printk("Secondary procbased controls are NOT available!");
 	}
+
+	/* Exit controls */
+	rdmsr(IA32_VMX_EXIT_CTLS, lo, hi);
+	pr_info("Exit Controls MSR: 0x%llx\n",
+		(uint64_t)(lo | (uint64_t)hi << 32));
+	report_capability(vmexit, 14, lo, hi);
+
+	/* Entry controls */
+	rdmsr(IA32_VMX_ENTRY_CTLS, lo, hi);
+	pr_info("Entry Controls MSR: 0x%llx\n",
+		(uint64_t)(lo | (uint64_t)hi << 32));
+	report_capability(entry, 12, lo, hi);
 }
 
 /*
