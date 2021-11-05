@@ -1,6 +1,6 @@
 Questions:
 
-1) Did the lab by yourself.
+1) Did the lab by myself.
 2) Steps used to complete the assignment:
 	- I forked the kernel source from the master linux git repository (https://github.com/torvalds/linux.git) to my github repo (https://github.com/serdardemirci55/linux).
 
