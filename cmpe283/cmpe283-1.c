@@ -12,9 +12,11 @@
  * See SDM volume 4, section 2.1
  */
 #define IA32_VMX_PINBASED_CTLS	0x481
+#define IA32_VMX_PROCBASED_CTLS 0x482
+#define IA32_VMX_PROCBASED_CTLS2 0x48B
 
 /*
- * struct caapability_info
+ * struct capability_info
  *
  * Represents a single capability (bit number and description).
  * Used by report_capability to output VMX capabilities.
@@ -27,7 +29,7 @@ struct capability_info {
 
 /*
  * Pinbased capabilities
- * See SDM volume 3, section 24.6.1
+ * See SDM volume 3, section 23.6.1
  */
 struct capability_info pinbased[5] =
 {
@@ -36,6 +38,71 @@ struct capability_info pinbased[5] =
 	{ 5, "Virtual NMIs" },
 	{ 6, "Activate VMX Preemption Timer" },
 	{ 7, "Process Posted Interrupts" }
+};
+
+/*
+ * Procbased capabilities
+ * See SDM volume 3, section 23.6.2
+ */
+struct capability_info procbased[22] =
+{
+	{ 2, "Interrupt Window Exiting" },
+	{ 3, "Use TSC Offsetting" },
+	{ 7, "HLT Exiting" },
+	{ 9, "INVLPG Exiting" },
+	{ 10, "MWAIT Exiting" },
+	{ 11, "RDPMC Exiting" },
+	{ 12, "RDTSC Exiting" },
+	{ 15, "CR3 Load Exiting" },
+	{ 16, "CR3 Store Exiting" },
+	{ 17, "Activate Tertiary Controls" },
+	{ 19, "CR8 Load Exiting" },
+	{ 20, "CR8 Store Exiting" },
+	{ 21, "Use TPR Shadow" },
+	{ 22, "NMI Window Exiting" },
+	{ 23, "MOV DR Exiting" },
+	{ 24, "Unconditional I/O Exiting" },
+	{ 25, "Use I/O Bitmaps" },
+	{ 27, "Monitor Trap Flag" },
+	{ 28, "Use MSR Bitmaps" },
+	{ 29, "MONITOR Exiting" },
+	{ 30, "PAUSE Exiting" },
+	{ 31, "Activate Secondary Controls" }
+};
+
+/*
+ * Procbased capabilities
+ * See SDM volume 3, section 23.6.2
+ */
+struct capability_info procbased_secondary[27] =
+{
+ 	{ 0, "Virtualize APIC Accesses" },
+    { 1, "Enable EPT" },
+    { 2, "Descriptor-table Exiting" },
+    { 3, "Enable RDTSCP" },
+    { 4, "Virtualize x2APIC Mode" },
+    { 5, "Enable VPID" },
+    { 6, "WBINVD Exiting" },
+    { 7, "Unrestricted Guest" },
+    { 8, "APIC Register Virtualization" },
+    { 9, "Virtual Interrupt Delivery" },
+    { 10, "PAUSE Loop Exiting" },
+    { 11, "RDRAND Exiting" },
+    { 12, "Enable INVPCID" },
+    { 13, "Enable VM Functions" },
+    { 14, "VMCS Shadowing" },
+    { 15, "Enable ENCLS Exiting" },
+    { 16, "RDSEED Exiting" },
+    { 17, "Enable PML" },
+    { 18, "EPT Violation #VE" },
+    { 19, "Conceal VMX From PT" },
+    { 20, "Enable XSAVES/XRSTORS" },
+    { 22, "Mode Based Execution Control for EPT" },
+    { 23, "Sub Page write permissions for EPT" },
+    { 24, "Intel PT Uses Guest Physical Addresses" },
+    { 25, "Use TSC Scaling" },
+    { 26, "Enable User Wait And Pause" },
+    { 28, " Enable ENCLV exiting" }
 };
 
 /*
@@ -85,6 +152,27 @@ detect_vmx_features(void)
 	pr_info("Pinbased Controls MSR: 0x%llx\n",
 		(uint64_t)(lo | (uint64_t)hi << 32));
 	report_capability(pinbased, 5, lo, hi);
+
+	/* Procbased controls */
+	rdmsr(IA32_VMX_PROCBASED_CTLS, lo, hi);
+	pr_info("Procbased Controls MSR: 0x%llx\n",
+		(uint64_t)(lo | (uint64_t)hi << 32));
+	report_capability(procbased, 22, lo, hi);
+
+	/* Determine if secondary procbased controls are available */
+	if ( hi & (1 << (63 - 32)))
+	{
+		printk("Secondary procbased controls are available!");
+		/* Procbased secondary controls */
+		rdmsr(IA32_VMX_PROCBASED_CTLS2, lo, hi);
+		pr_info("Procbased Secondary Controls MSR: 0x%llx\n",
+			(uint64_t)(lo | (uint64_t)hi << 32));
+		report_capability(procbased_secondary, 27, lo, hi);
+	}
+	else
+	{
+		printk("Secondary procbased controls are NOT available!");
+	}
 }
 
 /*
@@ -118,3 +206,5 @@ cleanup_module(void)
 {
 	printk(KERN_INFO "CMPE 283 Assignment 1 Module Exits\n");
 }
+
+MODULE_LICENSE("GPL v2");
