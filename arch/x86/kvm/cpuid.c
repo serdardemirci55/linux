@@ -1230,7 +1230,9 @@ bool kvm_cpuid(struct kvm_vcpu *vcpu, u32 *eax, u32 *ebx,
 }
 EXPORT_SYMBOL_GPL(kvm_cpuid);
 u32 total_exits;
+atomic64_t total_cpu_time;
 EXPORT_SYMBOL(total_exits);
+EXPORT_SYMBOL(total_cpu_time);
 
 int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 {
@@ -1243,7 +1245,12 @@ int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 	ecx = kvm_rcx_read(vcpu);
 
   	if (eax == 0x4fffffff) {
+		printk("Entered total_exits");
 		eax = total_exits;
+	} else if(eax  ==  0x4ffffffe){
+		printk("Entered total_cpu_time");	
+		ebx = ( (atomic64_read(&total_cpu_time) >> 32) );
+		ecx = ( (atomic64_read(&total_cpu_time) & 0xFFFFFFFF ));    
 	} else {
 		kvm_cpuid(vcpu, &eax, &ebx, &ecx, &edx, false);
 	}	
