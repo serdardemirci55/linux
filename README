@@ -12,7 +12,8 @@ Questions:
 
 	1. Did the assignment by myself.
 	2. Steps used to complete the assignment:
-		. Started with my assignment 1 environment: https://github.com/serdardemirci55/linux/tree/master/cmpe283
+		. Started with my assignment 1 environment: 
+		  https://github.com/serdardemirci55/linux/tree/master/cmpe283
 
 		. Installed necessary packages to compile the Linux kernel abd build the kernel.
 			apt-get install build-essential kernel-package fakeroot libncurses5-dev libssl-dev ccache bison flex libelf-dev 
@@ -65,7 +66,8 @@ Questions:
 			sudo yum install cpuid
 
 		. Tested the assignment functionality using cpuid in the VM (L2).
-			For CPUID leaf node %eax=0x4FFFFFFF(check the eax value for the total number of exits (all types)):
+			For CPUID leaf node %eax=0x4FFFFFFF(check the eax value for the total number 
+			of exits (all types)):
 				[root@centosl2vmcmpe283 ~]# cpuid -l 0x4FFFFFFF
 				Disclaimer: cpuid may not support decoding of all cpuid registers.
 				CPU 0:
@@ -76,7 +78,8 @@ Questions:
 				CPU 0:
 				   0x4fffffff 0x00: eax=0x0007f7b9 ebx=0xffffb2e2 ecx=0x00000000 edx=0xffff96e1
 
-			For CPUID leaf node %eax=0x4FFFFFFE(check the ebx and ecx value for the total time spent processing all exits):
+			For CPUID leaf node %eax=0x4FFFFFFE(check the ebx and ecx value for the total time spent
+			processing all exits):
 				[root@centosl2vmcmpe283 ~]# cpuid -l 0x4FFFFFFE
 				Disclaimer: cpuid may not support decoding of all cpuid registers.
 				CPU 0:
@@ -136,7 +139,8 @@ Questions:
 			sudo virsh console centosl2vmcmpe283
 
 		. Tested the assignment functionality using cpuid in the VM (L2).
-			For CPUID leaf node %eax=0x4FFFFFFD(check the eax value for the exit number provided (on input) in %ecx):
+			For CPUID leaf node %eax=0x4FFFFFFD(check the eax value for the exit number 
+			provided (on input) in %ecx):
 				[root@centosl2vmcmpe283 ~]# cpuid -l 0x4FFFFFFD -s 0x0
 				Disclaimer: cpuid may not support decoding of all cpuid registers.
 				CPU 0:
@@ -150,7 +154,8 @@ Questions:
 				CPU 0:
 				   0x4ffffffd 0x1e: eax=0x00039a19 ebx=0xffffb2e2 ecx=0x0000001e edx=0xffff96e1
 
-			For CPUID leaf node %eax=0x4FFFFFFC(check the ebx and ecx value for the exit number provided (on input) in %ecx):
+			For CPUID leaf node %eax=0x4FFFFFFC(check the ebx and ecx value for the exit number 
+			provided (on input) in %ecx):
 				[root@centosl2vmcmpe283 ~]# cpuid -l 0x4FFFFFFC -s 0x0
 				Disclaimer: cpuid may not support decoding of all cpuid registers.
 				CPU 0:
@@ -164,7 +169,8 @@ Questions:
 				CPU 0:
 				   0x4ffffffc 0x1e: eax=0x4ffffffc ebx=0x00000000 ecx=0x230f2727 edx=0xffff96e1
 
-			For both CPUID leaf node 0x4FFFFFFD & 0x4FFFFFFC (check value not defined by the SDM and exit types not enabled in KVM):
+			For both CPUID leaf node 0x4FFFFFFD & 0x4FFFFFFC (check value not defined by the SDM and exit 
+			types not enabled in KVM):
 				[root@centosl2vmcmpe283 ~]# cpuid -l 0x4FFFFFFD -s 0x3
 				Disclaimer: cpuid may not support decoding of all cpuid registers.
 				CPU 0:
@@ -185,8 +191,8 @@ Questions:
 				CPU 0:
 				   0x4ffffffc 0x23: eax=0x00000000 ebx=0x00000000 ecx=0x00000000 edx=0xffffffff
 
-	3. Does the number of exits increase at a stable rate? Or are there more exits performed during certain VM operations?
-	   Approximately how many exits does a full VM boot entail?
+	3. Does the number of exits increase at a stable rate? Or are there more exits performed 
+	   during certain VM operations? Approximately how many exits does a full VM boot entail?
 
 		During the boot number of exits increase dramatically especially for exit types 10,28 and 30. After boot, they increase at a more stable rate.
 		Approximately 520000 exits does a full VM boot (all types). 
