@@ -5914,6 +5914,9 @@ void dump_vmcs(struct kvm_vcpu *vcpu)
 
 extern u32 total_exits;
 extern atomic64_t total_cpu_time; 
+extern u32 total_exits_by_reason[70];
+extern atomic64_t total_cpu_time_by_reason[70];
+int flag = 0;
 
 /*
  * The guest has exited.  See if we can fix it or if we need userspace
@@ -5929,7 +5932,6 @@ static int __vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 	u64 current_cpu_timestamp;
 	u64 additional_cpu_timestamp;
 
-	total_exits++;
 
 	/*
 	 * Flush logged GPAs PML buffer, this will make dirty_bitmap more
@@ -6070,11 +6072,23 @@ static int __vmx_handle_exit(struct kvm_vcpu *vcpu, fastpath_t exit_fastpath)
 						kvm_vmx_max_exit_handlers);
 	if (!kvm_vmx_exit_handlers[exit_handler_index])
 		goto unexpected_vmexit;
-
+	
+	if (flag == 0){
+		 int j;  
+		 for (j = 0; j < 70; ++j) 
+  		 {
+		   if(!kvm_vmx_exit_handlers[j])
+			total_exits_by_reason[j] = -1;
+   		 }	
+		 flag = 1;
+	}
+	total_exits++;	
+	total_exits_by_reason[exit_handler_index]++;	
 	current_cpu_timestamp = rdtsc();
         exit_handler = kvm_vmx_exit_handlers[exit_handler_index](vcpu);
         additional_cpu_timestamp = rdtsc();
         atomic64_add((additional_cpu_timestamp - current_cpu_timestamp),&total_cpu_time); 
+	atomic64_add((additional_cpu_timestamp - current_cpu_timestamp),&total_cpu_time_by_reason[exit_handler_index]);
 	return exit_handler;
 
 

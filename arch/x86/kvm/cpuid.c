@@ -1230,9 +1230,13 @@ bool kvm_cpuid(struct kvm_vcpu *vcpu, u32 *eax, u32 *ebx,
 }
 EXPORT_SYMBOL_GPL(kvm_cpuid);
 u32 total_exits;
+u32 total_exits_by_reason[70];
 atomic64_t total_cpu_time;
+atomic64_t total_cpu_time_by_reason[70];
 EXPORT_SYMBOL(total_exits);
 EXPORT_SYMBOL(total_cpu_time);
+EXPORT_SYMBOL(total_exits_by_reason);
+EXPORT_SYMBOL(total_cpu_time_by_reason);
 
 int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 {
@@ -1251,6 +1255,41 @@ int kvm_emulate_cpuid(struct kvm_vcpu *vcpu)
 		printk("Entered total_cpu_time");	
 		ebx = ( (atomic64_read(&total_cpu_time) >> 32) );
 		ecx = ( (atomic64_read(&total_cpu_time) & 0xFFFFFFFF ));    
+	} else if(eax  ==  0x4ffffffd){
+                printk("Entered total_exits_by_reason");
+		if(ecx >= 0 && ecx < 70 && ecx != 35 && ecx != 38 && ecx != 42 && ecx != 65) { 	
+			if (total_exits_by_reason[ecx] != -1){
+				eax = total_exits_by_reason[ecx];
+			} else {
+				eax = 0x00000000;
+                       		ebx = 0x00000000;
+                        	ecx = 0x00000000;
+                      		edx = 0x00000000;
+			}	
+		} else {
+			eax = 0x00000000;
+			ebx = 0x00000000;
+			ecx = 0x00000000;
+			edx = 0xffffffff;
+		}
+	} else if(eax  ==  0x4ffffffc){
+		printk("Entered total_cpu_time_by_reason");
+		if(ecx >= 0 && ecx < 70 && ecx != 35 && ecx != 38 && ecx != 42 && ecx != 65) {	
+			if (total_exits_by_reason[ecx] != -1){	
+				ebx = ( (atomic64_read(&total_cpu_time_by_reason[ecx]) >> 32) );
+                        	ecx = ( (atomic64_read(&total_cpu_time_by_reason[ecx]) & 0xFFFFFFFF ));
+			} else {
+                                eax = 0x00000000;
+                                ebx = 0x00000000;
+                                ecx = 0x00000000;
+                                edx = 0x00000000;
+                        }
+                } else {
+                        eax = 0x00000000;
+                        ebx = 0x00000000;
+                        ecx = 0x00000000;
+                        edx = 0xffffffff;
+		}
 	} else {
 		kvm_cpuid(vcpu, &eax, &ebx, &ecx, &edx, false);
 	}	
