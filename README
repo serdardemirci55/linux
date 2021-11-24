@@ -3,7 +3,7 @@ CMPE283 : Virtualization
 Assignment 2: Instrumentation via hypercall
 Assignment 3: Instrumentation via hypercall (cont’d)
 
-------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
 Assignment 2: Instrumentation via hypercall
 
 Selected CPUID lead nodes for assignment 2: %eax=0x4FFFFFFF & %eax=0x4FFFFFFE
@@ -91,7 +91,7 @@ Questions:
 				   0x4ffffffe 0x00: eax=0x4ffffffe ebx=0x00000001 ecx=0x20e2a883 edx=0xffff9b20
 
 
-------------------------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------
 Assignment 3: Instrumentation via hypercall (cont’d)
 
 Selected CPUID lead nodes for assignment 3: %eax=0x4FFFFFFD & %eax=0x4FFFFFFC
@@ -150,7 +150,6 @@ Questions:
 				CPU 0:
 				   0x4ffffffd 0x1e: eax=0x00039a19 ebx=0xffffb2e2 ecx=0x0000001e edx=0xffff96e1
 
-
 			For CPUID leaf node %eax=0x4FFFFFFC(check the ebx and ecx value for the exit number provided (on input) in %ecx):
 				[root@centosl2vmcmpe283 ~]# cpuid -l 0x4FFFFFFC -s 0x0
 				Disclaimer: cpuid may not support decoding of all cpuid registers.
@@ -196,3 +195,4 @@ Questions:
 
 		Most frequent exit types: 30 - I/O instruction & 10 - CPUID
 		Least: 29 - MOV DR. (There are also many exit types having zero count)
+
