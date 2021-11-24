@@ -16,10 +16,11 @@ Questions:
 		  https://github.com/serdardemirci55/linux/tree/master/cmpe283
 
 		. Installed necessary packages to compile the Linux kernel abd build the kernel.
-			apt-get install build-essential kernel-package fakeroot libncurses5-dev libssl-dev ccache bison flex libelf-dev 
+			apt-get install build-essential kernel-package fakeroot libncurses5-dev libssl-dev ccache \
+			bison flex libelf-dev 
 			cd ~/linux
 			cp /boot/config_file .config
-			change config file .config CONFIG_SYSTEM_TRUSTED_KEYS="debian/canonical-certs.pem" to CONFIG_SYSTEM_TRUSTED_KEYS=""
+			change config file .config to CONFIG_SYSTEM_TRUSTED_KEYS=""
 			make oldconfig
 			make -j 8 modules
 			make -j 8
@@ -27,7 +28,7 @@ Questions:
 			sudo make install
 			sudo reboot
 
-		. I modified the CPUID emulation code in KVM to report back additional information using special CPUID leaf nodes.
+		. Modified the CPUID emulation code in KVM to report information using special CPUID leaf nodes.
 			For CPUID leaf node %eax=0x4FFFFFFF:
 				Returns the total number of exits (all types) in %eax
 			For CPUID leaf node %eax=0x4FFFFFFE:
@@ -105,7 +106,7 @@ Questions:
 	2. Steps used to complete the assignment:
 		. Cont’d from my assignment 2 environment.
 
-		. I modified the CPUID emulation code in KVM to report back additional information using special CPUID leaf nodes.
+		. Modified the CPUID emulation code in KVM to report information using special CPUID leaf nodes.
 			For CPUID leaf node %eax=0x4FFFFFFD:
 				Returns the number of exits for the exit number provided (on input) in %ecx
 				This value should be returned in %eax 
@@ -194,7 +195,8 @@ Questions:
 	3. Does the number of exits increase at a stable rate? Or are there more exits performed 
 	   during certain VM operations? Approximately how many exits does a full VM boot entail?
 
-		During the boot number of exits increase dramatically especially for exit types 10,28 and 30. After boot, they increase at a more stable rate.
+		During the boot number of exits increase dramatically especially for exit types 10,28 and 30. 
+		After boot, they increase at a more stable rate.
 		Approximately 520000 exits does a full VM boot (all types). 
 
 	4. Of the exit types defined in the SDM, which are the most frequent? Least?
