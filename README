@@ -1,18 +1,199 @@
-Linux kernel
-============
+CMPE283 : Virtualization
 
-There are several guides for kernel developers and users. These guides can
-be rendered in a number of formats, like HTML and PDF. Please read
-Documentation/admin-guide/README.rst first.
+Assignment 2: Instrumentation via hypercall
+Assignment 3: Instrumentation via hypercall (cont’d)
 
-In order to build the documentation, use ``make htmldocs`` or
-``make pdfdocs``.  The formatted documentation can also be read online at:
 
-    https://www.kernel.org/doc/html/latest/
+	Assignment 2: Instrumentation via hypercall
 
-There are various text files in the Documentation/ subdirectory,
-several of them using the Restructured Text markup notation.
+		Selected CPUID lead nodes for assignment 2: %eax=0x4FFFFFFF & %eax=0x4FFFFFFE
 
-Please read the Documentation/process/changes.rst file, as it contains the
-requirements for building and running the kernel, and information about
-the problems which may result by upgrading your kernel.
+		Questions:
+
+			1. Did the assignment by myself.
+			2. Steps used to complete the assignment:
+				. Started with my assignment 1 environment: https://github.com/serdardemirci55/linux/tree/master/cmpe283
+
+				. Installed necessary packages to compile the Linux kernel abd build the kernel.
+					apt-get install build-essential kernel-package fakeroot libncurses5-dev libssl-dev ccache bison flex libelf-dev 
+					cd ~/linux
+					cp /boot/config_file .config
+					change config file .config CONFIG_SYSTEM_TRUSTED_KEYS="debian/canonical-certs.pem" to CONFIG_SYSTEM_TRUSTED_KEYS=""
+					make oldconfig
+					make -j 8 modules
+					make -j 8
+					sudo make INSTALL_MOD_STRIP=1 modules_install
+					sudo make install
+					sudo reboot
+
+				. I modified the CPUID emulation code in KVM to report back additional information using special CPUID leaf nodes.
+					For CPUID leaf node %eax=0x4FFFFFFF:
+						Returns the total number of exits (all types) in %eax
+					For CPUID leaf node %eax=0x4FFFFFFE:
+						Returns the high 32 bits of the total time spent processing all exits in %ebx
+						Returns the low 32 bits of the total time spent processing all exits in %ecx
+						%ebx and %ecx return values are measured in processor cycles, across all VCPUs
+
+				. After modiffying the code following steps were done:
+					make -j 8 modules
+					sudo bash
+					make INSTALL_MOD_STRIP=1 modules_install && make install
+
+				. Reloaded the kvm and kvm_intel modeules without error.
+					lsmod | grep kvm
+					rmmod kvm_intel
+					rmmod kvm
+					modprobe kvm
+					modprobe kvm_intel
+					lsmod | grep kvm
+
+				. Created nested VM (L2) using virt-install after installing the related packages.
+					sudo apt-get install qemu-kvm libvirt-bin bridge-utils virt-manager virtinst cpu-checker
+
+					sudo virt-install  --network bridge:virbr0 --name centosl2vmcmpe283 \
+					--os-variant=centos7.0 --ram=1024 --vcpus=1  \
+					--disk path=/var/lib/libvirt/images/centosl2vmcmpe283-os.qcow2,format=qcow2,bus=virtio,size=5 \
+					--graphics none  --location=/var/lib/libvirt/images/CentOS-7-x86_64-DVD-2009.iso \
+					--extra-args="console=tty0 console=ttyS0,115200"  --check all=off
+
+				. Checked the VM (L2) status and start the VM if not.
+					sudo virsh -c qemu:///system list
+					sudo virsh start centosl2vmcmpe283
+
+				. Connected to the VM (L2) via console and installed cpuid package.
+					sudo virsh console centosl2vmcmpe283
+					sudo yum install cpuid
+
+				. Tested the assignment functionality using cpuid in the VM (L2).
+					For CPUID leaf node %eax=0x4FFFFFFF(check the eax value for the total number of exits (all types)):
+						[root@centosl2vmcmpe283 ~]# cpuid -l 0x4FFFFFFF
+						Disclaimer: cpuid may not support decoding of all cpuid registers.
+						CPU 0:
+						   0x4fffffff 0x00: eax=0x0007f5a6 ebx=0xffffb2e2 ecx=0x00000000 edx=0xffff96e1
+						[root@centosl2vmcmpe283 ~]# 
+						[root@centosl2vmcmpe283 ~]# cpuid -l 0x4FFFFFFF
+						Disclaimer: cpuid may not support decoding of all cpuid registers.
+						CPU 0:
+						   0x4fffffff 0x00: eax=0x0007f7b9 ebx=0xffffb2e2 ecx=0x00000000 edx=0xffff96e1
+
+					For CPUID leaf node %eax=0x4FFFFFFE(check the ebx and ecx value for the total time spent processing all exits):
+						[root@centosl2vmcmpe283 ~]# cpuid -l 0x4FFFFFFE
+						Disclaimer: cpuid may not support decoding of all cpuid registers.
+						CPU 0:
+						   0x4ffffffe 0x00: eax=0x4ffffffe ebx=0x00000000 ecx=0x3be84314 edx=0xffff9b20
+						[root@centosl2vmcmpe283 ~]# cpuid -l 0x4FFFFFFE
+						Disclaimer: cpuid may not support decoding of all cpuid registers.
+						CPU 0:
+						   0x4ffffffe 0x00: eax=0x4ffffffe ebx=0x00000000 ecx=0x3c029768 edx=0xffff9b20
+						[root@centosl2vmcmpe283 ~]# cpuid -l 0x4FFFFFFE
+						Disclaimer: cpuid may not support decoding of all cpuid registers.
+						CPU 0:
+						   0x4ffffffe 0x00: eax=0x4ffffffe ebx=0x00000001 ecx=0x20e2a883 edx=0xffff9b20
+
+
+
+	Assignment 3: Instrumentation via hypercall (cont’d)
+
+		Selected CPUID lead nodes for assignment 3: %eax=0x4FFFFFFD & %eax=0x4FFFFFFC
+
+		Questions:
+
+			1. Did the assignment by myself.
+			2. Steps used to complete the assignment:
+
+				. Cont’d from my assignment 2 environment.
+
+				. I modified the CPUID emulation code in KVM to report back additional information using special CPUID leaf nodes.
+					For CPUID leaf node %eax=0x4FFFFFFD:
+						Returns the number of exits for the exit number provided (on input) in %ecx
+						This value should be returned in %eax 
+					For CPUID leaf node %eax=0x4FFFFFFC:
+						Returns the time spent processing the exit number provided (on input) in %ecx
+						Returns the high 32 bits of the total time spent for that exit in %ebx
+						Returns the low 32 bits of the total time spent for that exit in %ecx
+
+					if %ecx (on input) contains a value not defined by the SDM,
+					returns 0 in all %eax, %ebx, %ecx registers and returns 0xFFFFFFFF in %edx.
+					For exit types not enabled in KVM, returns 0s in all four registers.
+
+				. After modiffying the code following steps were done:
+					make -j 8 modules
+					sudo bash
+					make INSTALL_MOD_STRIP=1 modules_install && make install
+
+				. Reloaded the kvm and kvm_intel modeules without error.
+					lsmod | grep kvm
+					rmmod kvm_intel
+					rmmod kvm
+					modprobe kvm
+					modprobe kvm_intel
+					lsmod | grep kvm
+
+				. Checked the VM (L2) status and start the VM if not.
+					sudo virsh -c qemu:///system list
+					sudo virsh start centosl2vmcmpe283
+
+				. Connected to the VM (L2) via console and installed cpuid package.
+					sudo virsh console centosl2vmcmpe283
+
+				. Tested the assignment functionality using cpuid in the VM (L2).
+					For CPUID leaf node %eax=0x4FFFFFFD(check the eax value for the exit number provided (on input) in %ecx):
+						[root@centosl2vmcmpe283 ~]# cpuid -l 0x4FFFFFFD -s 0x0
+						Disclaimer: cpuid may not support decoding of all cpuid registers.
+						CPU 0:
+						   0x4ffffffd 0x00: eax=0x00000009 ebx=0xffffb2e2 ecx=0x00000000 edx=0xffff96e1
+						[root@centosl2vmcmpe283 ~]# cpuid -l 0x4FFFFFFD -s 0xa
+						Disclaimer: cpuid may not support decoding of all cpuid registers.
+						CPU 0:
+						   0x4ffffffd 0x0a: eax=0x0002afc0 ebx=0xffffb2e2 ecx=0x0000000a edx=0xffff96e1
+						[root@centosl2vmcmpe283 ~]# cpuid -l 0x4FFFFFFD -s 0x1e
+						Disclaimer: cpuid may not support decoding of all cpuid registers.
+						CPU 0:
+						   0x4ffffffd 0x1e: eax=0x00039a19 ebx=0xffffb2e2 ecx=0x0000001e edx=0xffff96e1
+						
+
+					For CPUID leaf node %eax=0x4FFFFFFC(check the ebx and ecx value for the exit number provided (on input) in %ecx):
+						[root@centosl2vmcmpe283 ~]# cpuid -l 0x4FFFFFFC -s 0x0
+						Disclaimer: cpuid may not support decoding of all cpuid registers.
+						CPU 0:
+						   0x4ffffffc 0x00: eax=0x4ffffffc ebx=0x00000000 ecx=0x0018e196 edx=0xffff96e1
+						[root@centosl2vmcmpe283 ~]# cpuid -l 0x4FFFFFFC -s 0xa
+						Disclaimer: cpuid may not support decoding of all cpuid registers.
+						CPU 0:
+						   0x4ffffffc 0x0a: eax=0x4ffffffc ebx=0x00000000 ecx=0x0859d6a3 edx=0xffff96e1
+						[root@centosl2vmcmpe283 ~]# cpuid -l 0x4FFFFFFC -s 0x1e
+						Disclaimer: cpuid may not support decoding of all cpuid registers.
+						CPU 0:
+						   0x4ffffffc 0x1e: eax=0x4ffffffc ebx=0x00000000 ecx=0x230f2727 edx=0xffff96e1
+
+					For both CPUID leaf node 0x4FFFFFFD & 0x4FFFFFFC (check value not defined by the SDM and exit types not enabled in KVM):
+						[root@centosl2vmcmpe283 ~]# cpuid -l 0x4FFFFFFD -s 0x3
+						Disclaimer: cpuid may not support decoding of all cpuid registers.
+						CPU 0:
+						   0x4ffffffd 0x03: eax=0x00000000 ebx=0x00000000 ecx=0x00000000 edx=0x00000000
+
+						[root@centosl2vmcmpe283 ~]# cpuid -l 0x4FFFFFFD -s 0x23
+						Disclaimer: cpuid may not support decoding of all cpuid registers.
+						CPU 0:
+						   0x4ffffffd 0x23: eax=0x00000000 ebx=0x00000000 ecx=0x00000000 edx=0xffffffff
+
+						[root@centosl2vmcmpe283 ~]# cpuid -l 0x4FFFFFFC -s 0x3
+						Disclaimer: cpuid may not support decoding of all cpuid registers.
+						CPU 0:
+						   0x4ffffffc 0x03: eax=0x00000000 ebx=0x00000000 ecx=0x00000000 edx=0x00000000
+
+						[root@centosl2vmcmpe283 ~]# cpuid -l 0x4FFFFFFC -s 0x23
+						Disclaimer: cpuid may not support decoding of all cpuid registers.
+						CPU 0:
+						   0x4ffffffc 0x23: eax=0x00000000 ebx=0x00000000 ecx=0x00000000 edx=0xffffffff
+					
+			3. Does the number of exits increase at a stable rate? Or are there more exits performed during certain VM operations?
+			   Approximately how many exits does a full VM boot entail?
+
+			   	During the boot number of exits increase dramatically especially for exit types 10,28 and 30. After boot, they increase at a more stable rate.
+			   	Approximately 520000 exits does a full VM boot (all types). 
+
+			4. Of the exit types defined in the SDM, which are the most frequent? Least?
+			
+				Most frequent exit types: 30 - I/O instruction & 10 - CPUID
+				Least: 29 - MOV DR. (There are also many exit types having zero count)
